@@ -6,6 +6,16 @@ use crate::{
     events::GameEvent,
 };
 
+pub fn get_action_at(entity: Entity, target: IVec2, world: &mut World) -> Option<Box<dyn Action>> {
+    let actions: Vec<Box<dyn Action>> = vec![Box::new(MoveAction { entity, target })];
+    for action in actions {
+        if action.is_valid(world) {
+            return Some(action);
+        }
+    }
+    None
+}
+
 pub trait Action: Send + Sync {
     fn execute(&self, world: &mut World) -> Option<Box<dyn Action>>;
     fn is_valid(&self, world: &mut World) -> bool {
