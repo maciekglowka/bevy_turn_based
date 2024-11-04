@@ -4,3 +4,5 @@ pub const SPRITE_SCALE: f32 = SPRITE_SIZE / 8.;
 
 pub const BOARD_Z: f32 = 0.;
 pub const SPRITE_Z: f32 = 5.;
+
+pub const MOVE_SPEED: f32 = 500.;

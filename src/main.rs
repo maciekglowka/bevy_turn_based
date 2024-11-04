@@ -1,18 +1,22 @@
 use bevy::prelude::*;
 
-mod actions;
 mod assets;
 mod components;
-mod dungeon;
+mod events;
+mod game;
 mod globals;
+mod input;
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
-        .add_plugins(dungeon::DungeonPlugin)
+        .add_plugins(game::GamePlugin)
         .insert_resource(assets::SpriteTextures::default())
-        .add_systems(Startup, setup)
-        .add_systems(Startup, assets::load_assets)
+        .add_event::<events::InputEvent>()
+        .add_event::<events::GameEvent>()
+        .add_event::<events::GameTick>()
+        .add_systems(Startup, (setup, assets::load_assets))
+        .add_systems(Update, input::handle_game_keyboard)
         .run();
 }
 
