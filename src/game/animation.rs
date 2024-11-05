@@ -1,4 +1,4 @@
-use bevy::{math::VectorSpace, prelude::*};
+use bevy::prelude::*;
 
 use super::utils::tile_to_world;
 use crate::{
@@ -7,7 +7,11 @@ use crate::{
     globals::MOVE_SPEED,
 };
 
-pub fn handle_game_events(mut commands: Commands, mut events: EventReader<GameEvent>) {
+pub fn handle_game_events(
+    mut commands: Commands,
+    mut events: EventReader<GameEvent>,
+    query: Query<&Transform>,
+) {
     for event in events.read() {
         match event {
             GameEvent::Move(entity, target) => {
@@ -16,6 +20,17 @@ pub fn handle_game_events(mut commands: Commands, mut events: EventReader<GameEv
                     .insert(Animation(AnimationKind::Translate(
                         vec![tile_to_world(*target, None)].into(),
                     )));
+            }
+            GameEvent::Attack(entity, target) => {
+                if let Ok(transform) = query.get(*entity) {
+                    let current = transform.translation;
+                    let target_v = tile_to_world(*target, None);
+                    commands
+                        .entity(*entity)
+                        .insert(Animation(AnimationKind::Translate(
+                            vec![0.5 * (current + target_v), current].into(),
+                        )));
+                }
             }
         }
     }
