@@ -6,9 +6,6 @@ pub enum AnimationKind {
 }
 
 #[derive(Component)]
-pub struct Actor;
-
-#[derive(Component)]
 pub struct Animation(pub AnimationKind);
 
 #[derive(Component)]

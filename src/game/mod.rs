@@ -6,22 +6,17 @@ use bevy::{
 use std::collections::VecDeque;
 
 use crate::{
-    components::{Actor, Player, Position},
+    components::{Npc, Player, Position},
     events::{GameTick, InputEvent},
 };
 
 mod actions;
 mod animation;
 mod board;
+mod npcs;
 mod player;
 mod utils;
 
-// #[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Hash, States)]
-// enum TurnState {
-//     #[default]
-//     Player,
-//     Npc,
-// }
 #[derive(Resource)]
 struct QueueSystems {
     collect_actor_queue: SystemId,
@@ -48,7 +43,10 @@ impl Plugin for GamePlugin {
         app.init_resource::<ActionQueue>()
             .init_resource::<ActorQueue>()
             .init_resource::<QueueSystems>()
-            .add_systems(PostStartup, (board::spawn_board, player::spawn_player))
+            .add_systems(
+                PostStartup,
+                (board::spawn_board, npcs::spawn_npcs, player::spawn_player),
+            )
             .add_systems(
                 Update,
                 (
@@ -75,7 +73,7 @@ fn handle_action_queue(world: &mut World) {
 }
 
 fn collect_actor_queue(
-    query: Query<Entity, (With<Actor>, Without<Player>)>,
+    query: Query<Entity, (With<Npc>, Without<Player>)>,
     player_query: Query<Entity, With<Player>>,
     mut queue: ResMut<ActorQueue>,
 ) {
@@ -101,6 +99,12 @@ fn handle_actor_queue(world: &mut World) {
         }
         return;
     }
+
+    // otherwise handle npcs actor
+    world.resource_mut::<ActorQueue>().0.pop_front();
+    if let Some(action) = npcs::get_npc_action(entity, world) {
+        world.resource_mut::<ActionQueue>().0.push_back(action);
+    }
 }
 
 fn handle_input_events(
@@ -113,10 +117,3 @@ fn handle_input_events(
         }
     }
 }
-
-// struct AppendActionQueue(Box<dyn actions::Action>);
-// impl Command for AppendActionQueue {
-//     fn apply(self, world: &mut World) {
-//         world.resource_mut::<ActionQueue>().0.push_back(self.0);
-//     }
-// }
